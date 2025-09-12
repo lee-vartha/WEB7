@@ -1,0 +1,19 @@
+<div class="dashboard-container">
+    <h2>Beneficiary Dashboard</h2>
+
+    <div class="balance">
+        <strong>Token Balance:</strong> {{balance}}
+    </div>
+
+    <h3>Available Products</h3>
+    <div class="products">
+        <div class="product-card" *ngFor="let p of products">
+            <h4>{{p.name}}</h4>
+            <p class="description">{{p.description}}</p>
+            <p class="cost">{{p.cost}} tokens</p>
+            <button (click)="buyProduct(p)">Buy</button>
+        </div>
+    </div>
+
+    <p class="error">{{msg}}</p>
+</div>

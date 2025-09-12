@@ -1,0 +1,40 @@
+<div class="container mt-5">
+  <div class="card p-4 shadow">
+    <h2 class="mb-4">🏠 Donor Dashboard</h2>
+
+    // details to add a product
+    <h4>Add Product</h4>
+    <input
+      [(ngModel)]="form.name"
+      placeholder="Product Name"
+      class="form-control mb-2"
+    />
+    <input
+      [(ngModel)]="form.description"
+      placeholder="Description"
+      class="form-control mb-2"
+    />
+    <input
+      [(ngModel)]="form.cost"
+      type="number"
+      placeholder="Cost (tokens)"
+      class="form-control mb-2"
+    />
+
+    <button (click)="addProduct()" class="btn btn-primary w-100 mb-3">
+      Add Product
+    </button>
+    <p class="text-info">{{ msg }}</p>
+
+    <h4 class="mt-4">My Products</h4>
+    <ul class="list-group" *ngIf="products.length > 0; else noProducts">
+      <li class="list-group-item" *ngFor="let product of products">
+        <strong>{{ product.name }}</strong> — {{ product.description }} ({{ product.cost }} tokens)
+      </li>
+    </ul>
+
+    <ng-template #noProducts>
+      <p class="text-muted">No products listed yet.</p>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,4 @@
+gradio>=4.0.0
+sqlite-utils>=3.35
+passlib>=1.7.4
+PyJWT>=2.6.0

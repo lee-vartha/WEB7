@@ -1,0 +1,82 @@
+.dashboard-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #222;
+}
+
+.balance {
+  font-size: 16px;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+h3 {
+  margin: 1rem 0;
+  color: #444;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.product-card {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.product-card h4 {
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+
+.description {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.cost {
+  font-weight: bold;
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+button {
+  background: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #218838;
+}
+
+.error {
+  margin-top: 1rem;
+  color: red;
+  text-align: center;
+}
