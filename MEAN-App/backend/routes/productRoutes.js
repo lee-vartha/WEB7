@@ -9,7 +9,7 @@ const router = express.Router();
 
 // post route for adding a product, get route for getting all products
 router.post('/', protect, addProduct);
-router.get('/', gertProducts);
+router.get('/', getProducts);
 
 // exporting the router
 module.exports = router;

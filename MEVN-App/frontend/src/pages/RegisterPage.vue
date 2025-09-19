@@ -6,7 +6,7 @@
       <input v-model="email" type="email" placeholder="Email" class="border p-2 w-full mb-3" />
       <input v-model="password" type="password" placeholder="Password" class="border p-2 w-full mb-3" />
       <select v-model="role" class="border p-2 w-full mb-3">
-        <option value="member">Member</option>
+        <option value="donor">Donor</option>
         <option value="beneficiary">Beneficiary</option>
       </select>
       <button type="submit" class="bg-blue-500 text-white px-4 py-2">Register</button>
@@ -40,7 +40,7 @@ export default {
         });
         // sending token to local storage and redirecting based on role
         localStorage.setItem("token", res.data.token);
-        if (this.role === "member") {
+        if (this.role === "donor") {
           this.$router.push("/donor");
         } else {
           this.$router.push("/beneficiary");

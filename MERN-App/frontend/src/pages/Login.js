@@ -10,8 +10,10 @@ function Login({setUser, setActiveTab}) {
         try {
             const res = await API.post('/auth/login', form);
             localStorage.setItem("token", res.data.token);
-            setUser(res.data.user);
-            setActiveTab(res.data.user.role === "donor" ? "donor" : "beneficiary");
+            API.get("/auth/me").then((res2) => {
+              setUser(res2.data);
+              setActiveTab(res2.data.role === "donor" ? "donor" : "beneficiary");
+            })
         } catch (err) {
             console.error("Login has failed:", err.response?.data || err.message);
             setMsg(err.response?.data?.msg || "Login failed - try again!")

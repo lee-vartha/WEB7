@@ -24,7 +24,7 @@ export class RegisterComponent {
           // redirect based on role
           if (res.user.role === 'beneficiary') {
             this.router.navigate(['/beneficiary-dashboard']);
-          } else if (res.user.role === 'member') {
+          } else if (res.user.role === 'donor') {
             this.router.navigate(['/donor-dashboard']);
           }
 

@@ -5,12 +5,12 @@ import API from "../api";
 function BeneficiaryDashboard({user, setUser}) {
     const [products, setProducts] = useState([]);
     const [msg, setMsg] = useState("");
-    const [balance, setBalance] = useState(user?.bokenBalance || 5);
+    const [balance, setBalance] = useState(user?.tokenBalance);
 
     useEffect(() => {
         // get products and user balance
         API.get("/products").then((res) => setProducts(res.data));
-        API.get("/users/me")
+        API.get("/auth/me")
             .then((res) => setBalance(res.data.tokenBalance))
             .catch(() => setBalance(5))
     }, []);

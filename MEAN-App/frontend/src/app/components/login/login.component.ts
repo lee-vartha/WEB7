@@ -28,7 +28,7 @@ export class LoginComponent {
         this.msg = 'Login successful!';
 
         // Navigate by role
-        if (res.user.role === 'member') {
+        if (res.user.role === 'donor') {
           this.router.navigate(['/donor-dashboard']);
         } else {
           this.router.navigate(['/beneficiary-dashboard']);

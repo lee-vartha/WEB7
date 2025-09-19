@@ -31,7 +31,7 @@ function Register({setUser, setActiveTab}) {
         value={form.role}
         onChange={e => setForm({ ...form, role: e.target.value })}>
         <option value="beneficiary">Beneficiary</option>
-        <option value="member">Member</option>
+        <option value="donor">Donor</option>
       </select>
       <button onClick={handleSubmit}
         className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">

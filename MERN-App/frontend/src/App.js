@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Navbar from "./components/Navbar";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import MemberDashboard from "./pages/MemberDashboard";
+import DonorDashboard from "./pages/DonorDashboard";
 import BeneficiaryDashboard from "./pages/BeneficiaryDashboard";
 
 
@@ -28,8 +28,8 @@ function App() {
         {activeTab === "login" && (
           <Login setUser={setUser} setActiveTab={setActiveTab} />
         )}
-        {activeTab === "member" && user?.role === "member" && (
-          <MemberDashboard user={user} setUser={setUser} />
+        {activeTab === "donor" && user?.role === "donor" && (
+          <DonorDashboard user={user} setUser={setUser} />
         )}
         {activeTab === "beneficiary" && user?.role === "beneficiary" && (
           <BeneficiaryDashboard user={user} setUser={setUser} />

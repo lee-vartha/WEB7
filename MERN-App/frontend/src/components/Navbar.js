@@ -12,7 +12,7 @@ function Navbar({ activeTab, setActiveTab, user, setUser }) {
   const tabs = [
     { key: "register", label: "Register" },
     { key: "login", label: "Login" },
-    { key: "member", label: "Member Dashboard" },
+    { key: "donor", label: "Donor Dashboard" },
     { key: "beneficiary", label: "Beneficiary Dashboard" },
   ];
 

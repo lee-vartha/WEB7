@@ -43,6 +43,7 @@ export default {
           name: this.name,
           description: this.description,
           cost: this.cost,
+          owner: this.owner
         });
         this.msg = `Product ${res.data.name} added successfully`;
         this.error = "";

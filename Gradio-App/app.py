@@ -146,7 +146,7 @@ with gr.Blocks() as app:
         r_name = gr.Textbox(label="Name")
         r_email = gr.Textbox(label="Email")
         r_pass = gr.Textbox(label="Password", type="password")
-        r_role = gr.Dropdown(["member", "beneficiary"], label="Role")
+        r_role = gr.Dropdown(["donor", "beneficiary"], label="Role")
         r_out = gr.Textbox(label="Status")
         gr.Button("Register").click(register,
             inputs=[r_name, r_email, r_pass, r_role],
@@ -166,16 +166,16 @@ with gr.Blocks() as app:
             inputs=[l_email, l_pass],
             outputs=[l_out, state])
 
-    with gr.Tab("🏠 Member Dashboard"):
+    with gr.Tab("🏠 Donor Dashboard"):
         m_product = gr.Textbox(label="Product Name")
         m_cost = gr.Number(label="Token Cost", precision=0)
         m_out = gr.Textbox(label="Status")
-        def member_add(name, cost, token):
+        def donor_add(name, cost, token):
             decoded = decode_token(token)
-            if not decoded or decoded["role"] != "member":
+            if not decoded or decoded["role"] != "donor":
                 return "❌ Unauthorized"
             return add_product(name, cost, decoded["email"])
-        gr.Button("Add Product").click(member_add,
+        gr.Button("Add Product").click(donor_add,
             inputs=[m_product, m_cost, state],
             outputs=m_out)
 

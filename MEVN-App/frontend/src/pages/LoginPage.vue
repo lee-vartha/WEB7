@@ -32,7 +32,7 @@ export default {
         });
         // get token and user role from response
         localStorage.setItem("token", res.data.token);
-        if (res.data.user.role === "member") {
+        if (res.data.user.role === "donor") {
           this.$router.push("/donor");
         } else {
           this.$router.push("/beneficiary");

@@ -27,7 +27,7 @@ MEVN:
 # [make new terminal]
 4. cd MEVN-App
 5. cd frontend
-6. npm run dev
+6. npm run serve
 
 Gradio:
 1. cd Gradio-App
