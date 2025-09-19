@@ -16,20 +16,20 @@ def init_db():
 
     c.execute("""
     CREATE TABLE IF NOT EXISTS users (
-              id INT PRIMARY KEY AUTOINCREMENT,
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
               name TEXT,
               email TEXT UNIQUE,
               password TEXT,
               role TEXT CHECK(role IN ('donor', 'beneficiary')),
-              tokens INT DEFAULT 10
+              tokens INTEGER DEFAULT 10
               )
         """)
     
     c.execute("""
     CREATE TABLE IF NOT EXISTS products (
-            id INT PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
-            cost INT,
+            cost INTEGER,
             owner_email TEXT
             )
               
@@ -91,7 +91,7 @@ def add_product(name, cost, owner_email):
               (name, cost, owner_email))
     conn.commit()
     conn.close()
-    return f"Product '{name} added!"
+    return f"Product '{name}' added!"
 
 def list_products():
     conn = sqlite3.connect("app.db")
@@ -102,31 +102,39 @@ def list_products():
     return "\n".join([f"{id}. {name} - {cost} tokens (by {owner})" for id, name, cost, owner in items])
 
 def spend_tokens(user_email, product_id):
-    conn = sqlite3.connect("app.db")
-    c = conn.cursor()
+    try:
+        conn = sqlite3.connect("app.db")
+        c = conn.cursor()
 
-    c.execute("SELECT name, cost FROM products WHERE id =?", (product_id,))
-    product = c.fetchone()
-    if not product:
-        return "Product not found"
-    
-    name, cost = product
-    
-    c.execute("SELECT tokens FROM users WHERE email = ?", (user_email,))
-    user = c.fetchone()
-    if not user:
-        return "User not found"
-    
-    current_tokens = user[0]
+        # fetch product
+        c.execute("SELECT name, cost FROM products WHERE id = ?", (product_id,))
+        product = c.fetchone()
+        if not product:
+            conn.close()
+            return "❌ Product not found"
 
-    if current_tokens < cost:
-        return "Not enough tokens"
-    
-    c.execute("UPDATE user SET tokens = tokens - ? WHERE email = ?", (cost, user_email))
-    conn.commit()
-    conn.close()
+        name, cost = product
 
-    return f"You bought '{name}, for {cost} tokens"
+        # fetch user balance
+        c.execute("SELECT tokens FROM users WHERE email = ?", (user_email,))
+        user = c.fetchone()
+        if not user:
+            conn.close()
+            return "❌ User not found"
+
+        current_tokens = user[0]
+        if current_tokens < cost:
+            conn.close()
+            return f"❌ Not enough tokens (you have {current_tokens}, need {cost})"
+
+        # update balance
+        c.execute("UPDATE users SET tokens = tokens - ? WHERE email = ?", (cost, user_email))
+        conn.commit()
+        conn.close()
+
+        return f"✅ You bought '{name}' for {cost} tokens"
+    except Exception as e:
+        return f"⚠️ Error: {str(e)}"
 
 
 def get_token_balance(email):
@@ -137,67 +145,111 @@ def get_token_balance(email):
     conn.close()
     return f"You have {tokens[0]} tokens." if tokens else "User not found"
 
-# INTERFACE
+#interface
 with gr.Blocks() as app:
     gr.Markdown("## Charity App - Gradio + SQLite + JWT")
-    state = gr.State(value=None) # holds the JWT
+    token_state = gr.State(value=None)
+    role_state = gr.State(value=None)
 
-    with gr.Tab("Register"):
+    # ---------------- Register ----------------
+    with gr.Tab("📝 Register") as register_tab:
         r_name = gr.Textbox(label="Name")
         r_email = gr.Textbox(label="Email")
         r_pass = gr.Textbox(label="Password", type="password")
         r_role = gr.Dropdown(["donor", "beneficiary"], label="Role")
         r_out = gr.Textbox(label="Status")
-        gr.Button("Register").click(register,
+
+        def handle_register(name, email, pw, role):
+            msg = register(name, email, pw, role)
+            if msg.lower().startswith("registration"):
+                tok = create_token(email, role)
+                return f"✅ {msg}", tok, role
+            return f"❌ {msg}", None, None
+
+        gr.Button("Register").click(
+            handle_register,
             inputs=[r_name, r_email, r_pass, r_role],
-            outputs=r_out)
-        
-    with gr.Tab("🔐 Login"):
+            outputs=[r_out, token_state, role_state],
+        )
+
+    # ---------------- Login ----------------
+    with gr.Tab("🔐 Login") as login_tab:
         l_email = gr.Textbox(label="Email")
         l_pass = gr.Textbox(label="Password", type="password")
         l_out = gr.Textbox(label="Status")
-        def handle_login(email, pw):
-            token = login(email, pw)
-            if token:
-                return "✅ Login successful", token
-            else:
-                return "❌ Login failed", None
-        gr.Button("Login").click(handle_login,
-            inputs=[l_email, l_pass],
-            outputs=[l_out, state])
 
-    with gr.Tab("🏠 Donor Dashboard"):
+        def handle_login(email, pw):
+            tok = login(email, pw)
+            if tok:
+                dec = decode_token(tok)
+                if dec:
+                    return "✅ Login successful", tok, dec["role"]
+            return "❌ Login failed", None, None
+
+        gr.Button("Login").click(
+            handle_login,
+            inputs=[l_email, l_pass],
+            outputs=[l_out, token_state, role_state],
+        )
+
+
+    # ---------------- Donor Dashboard ----------------
+    with gr.Tab("🏠 Donor Dashboard", visible=False) as donor_tab:
         m_product = gr.Textbox(label="Product Name")
         m_cost = gr.Number(label="Token Cost", precision=0)
         m_out = gr.Textbox(label="Status")
-        def donor_add(name, cost, token):
-            decoded = decode_token(token)
-            if not decoded or decoded["role"] != "donor":
-                return "❌ Unauthorized"
-            return add_product(name, cost, decoded["email"])
-        gr.Button("Add Product").click(donor_add,
-            inputs=[m_product, m_cost, state],
-            outputs=m_out)
 
-    with gr.Tab("🛍️ Browse & Buy Meals"):
+        def donor_add(name, cost, tok):
+            dec = decode_token(tok) if tok else None
+            if not dec or dec["role"] != "donor":
+                return "❌ Unauthorized"
+            return add_product(name, int(cost), dec["email"])
+
+        gr.Button("Add Product").click(
+            donor_add, inputs=[m_product, m_cost, token_state], outputs=m_out
+        )
+
+    # ---------------- Beneficiary Dashboard ----------------
+    with gr.Tab("🛍️ Browse & Buy Meals", visible=False) as beneficiary_tab:
         b_output = gr.Textbox(label="Available Meals", lines=8)
         b_id = gr.Number(label="Product ID to Buy")
         b_msg = gr.Textbox(label="Result")
-        def buy(pid, token):
-            decoded = decode_token(token)
-            if not decoded or decoded["role"] != "beneficiary":
-                return "❌ Unauthorized"
-            return spend_tokens(decoded["email"], int(pid))
-        gr.Button("View Meals").click(list_products, outputs=b_output)
-        gr.Button("Buy with Token").click(buy, inputs=[b_id, state], outputs=b_msg)
 
-    with gr.Tab("💰 Token Balance"):
-        t_out = gr.Textbox(label="Balance")
-        def show_balance(token):
-            decoded = decode_token(token)
-            if not decoded:
-                return "❌ Invalid token"
-            return get_token_balance(decoded["email"])
-        gr.Button("Check My Balance").click(show_balance, inputs=state, outputs=t_out)
+        def buy(pid, tok):
+            dec = decode_token(tok) if tok else None
+            if not dec or dec["role"] != "beneficiary":
+                return "❌ Unauthorized"
+            if not pid:
+                return "❌ Enter product ID"
+            return spend_tokens(dec["email"], int(pid))
+
+        gr.Button("View Meals").click(list_products, outputs=b_output)
+        gr.Button("Buy with Token").click(buy, inputs=[b_id, token_state], outputs=b_msg)
+
+        # ---------------- Logout ----------------
+    with gr.Tab("🚪 Logout", visible=False) as logout_tab:
+        l_msg = gr.Textbox(label="Status")
+
+        def handle_logout():
+            return None, None, "✅ Logged out", gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+
+        gr.Button("Logout").click(
+            handle_logout,
+            outputs=[token_state, role_state, l_msg, register_tab, login_tab, donor_tab, beneficiary_tab, logout_tab]
+        )
+
+
+    # ---------------- Role-based redirection ----------------
+    def show_tabs(role):
+        return (
+            gr.update(visible=(role == "donor")),
+            gr.update(visible=(role == "beneficiary")),
+        )
+
+    role_state.change(
+        show_tabs, inputs=role_state, outputs=[donor_tab, beneficiary_tab]
+    )
+
+
 
 app.launch()
