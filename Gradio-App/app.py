@@ -4,14 +4,16 @@ import sqlite3
 import jwt
 import time
 from passlib.hash import pbkdf2_sha256 
-
+import os
 # config
 JWT_SECRET_KEY = "mysecret"
 TOKEN_EXPIRES_SECONDS = 3600 #hour
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "app.db")
 
 # initiate database
 def init_db():
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     c.execute("""
@@ -62,7 +64,7 @@ def decode_token(token):
 def register(name, email, password, role):
     hashed_pw = pbkdf2_sha256.hash(password)
     try:
-        conn = sqlite3.connect("app.db")
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
                   (name, email, hashed_pw, role))
@@ -73,11 +75,14 @@ def register(name, email, password, role):
         return "Email already used"
     
 def login(email, password):
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT password, role FROM users WHERE email = ?", (email,))
     row = c.fetchone()
     conn.close()
+    if not row:
+        print(f"[DEBUG] no user found")
+        return None
     if row and pbkdf2_sha256.verify(password, row[0]):
         token = create_token(email, row[1])
         return token
@@ -85,7 +90,7 @@ def login(email, password):
         return None
     
 def add_product(name, cost, owner_email):
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT INTO products (name, cost, owner_email) VALUES (?, ?, ?)",
               (name, cost, owner_email))
@@ -94,7 +99,7 @@ def add_product(name, cost, owner_email):
     return f"Product '{name}' added!"
 
 def list_products():
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT id, name, cost, owner_email FROM products")
     items = c.fetchall()
@@ -103,7 +108,7 @@ def list_products():
 
 def spend_tokens(user_email, product_id):
     try:
-        conn = sqlite3.connect("app.db")
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
 
         # fetch product
@@ -138,7 +143,7 @@ def spend_tokens(user_email, product_id):
 
 
 def get_token_balance(email):
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT tokens FROM users WHERE email = ?", (email,))
     tokens = c.fetchone()

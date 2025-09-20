@@ -2,10 +2,13 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 // setting up the component with its selector and template
 @Component({
   selector: 'app-login',
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 

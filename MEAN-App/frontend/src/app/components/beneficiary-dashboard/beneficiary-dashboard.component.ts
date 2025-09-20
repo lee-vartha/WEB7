@@ -1,10 +1,12 @@
 // importing necessary modules and services (for angular component, api service, etc.)
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-
+import { CommonModule } from '@angular/common';
 // @component decorator with metadata
 @Component({
   selector: 'app-beneficiary-dashboard',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './beneficiary-dashboard.component.html',
   styleUrls: ['./beneficiary-dashboard.component.css']
 })

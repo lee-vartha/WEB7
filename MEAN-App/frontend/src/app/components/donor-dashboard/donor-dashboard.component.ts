@@ -1,10 +1,13 @@
 // importing necessary modules and services (for angular component, api service, etc.)
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 // defining that the component is the donor dashboard with its selector and template
 @Component({
   selector: 'app-donor-dashboard',
+  imports: [CommonModule, FormsModule],
   templateUrl: './donor-dashboard.component.html',
   styleUrls: ['./donor-dashboard.component.css']
 })

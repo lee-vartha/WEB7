@@ -5,6 +5,7 @@ const {register, login, getProfile} = require('../controllers/userController');
 // importing protect from auth middleware to protect certain routes
 const {protect} = require('../middleware/authMiddleware');
 
+const userController = require('../controller/userController');
 // getting the router (express.js)
 const router = express.Router();
 

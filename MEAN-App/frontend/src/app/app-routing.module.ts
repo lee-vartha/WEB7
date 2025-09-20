@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 import { DonorDashboardComponent } from './components/donor-dashboard/donor-dashboard.component';
 import { BeneficiaryDashboardComponent } from './components/beneficiary-dashboard/beneficiary-dashboard.component';
 
-const routes: Routes = [
-  { path: 'register', component: RegisterComponent },
+export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: 'donor-dashboard', component: DonorDashboardComponent },
-  { path: 'beneficiary-dashboard', component: BeneficiaryDashboardComponent },
-  { path: '', redirectTo: '/register', pathMatch: 'full' }
+  { path: 'register', component: RegisterComponent },
+  { path: 'donor', component: DonorDashboardComponent },
+  { path: 'beneficiary', component: BeneficiaryDashboardComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];
 
 @NgModule({
