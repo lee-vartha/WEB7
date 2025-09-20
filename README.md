@@ -38,5 +38,4 @@ Source .venv/Scripts/activate
 1. cd Python-App
 2. cd backend
 3. "uvicorn app.main:app --reload"
-4. open frontend/index.html
-5. click 'go live' bottom right tab
+4. for frontend, open frontend/index.html and click 'go live' bottom right tab
