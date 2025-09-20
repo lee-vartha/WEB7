@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Charity App – FastAPI</title>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+  <style>
+    body { margin: 0; }
+    nav ul { margin: 0; }
+    main { max-width: 900px; margin: 2rem auto; }
+    section { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="container-fluid">
+    <ul>
+      <li><strong>Charity App</strong></li>
+    </ul>
+    <ul>
+      <li><a href="#" id="navRegister">Register</a></li>
+      <li><a href="#" id="navLogin">Login</a></li>
+      <li><a href="#" id="navDonor">Donor</a></li>
+      <li><a href="#" id="navBeneficiary">Beneficiary</a></li>
+      <li><a href="#" id="navLogout" style="display:none">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- Register -->
+    <section id="registerSec">
+      <h2>Register</h2>
+      <form id="registerForm">
+        <input name="name" placeholder="Name" required />
+        <input name="email" type="email" placeholder="Email" required />
+        <input name="password" type="password" placeholder="Password" required />
+        <select name="role">
+          <option value="donor">Donor</option>
+          <option value="beneficiary">Beneficiary</option>
+        </select>
+        <button type="submit">Register</button>
+      </form>
+      <p id="regMsg"></p>
+    </section>
+
+    <!-- Login -->
+    <section id="loginSec">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input name="email" type="email" placeholder="Email" required />
+        <input name="password" type="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+      <p id="loginMsg"></p>
+      <p><b>Logged in as:</b> <span id="who"></span></p>
+    </section>
+
+    <!-- Donor Dashboard -->
+    <section id="donorSec">
+      <h2>Donor Dashboard</h2>
+      <form id="addProductForm">
+        <input name="name" placeholder="Product name" required />
+        <input name="description" placeholder="Description" />
+        <input name="cost" type="number" placeholder="Cost (tokens)" required />
+        <button type="submit">Add Product</button>
+      </form>
+      <p id="addMsg"></p>
+    </section>
+
+    <!-- Beneficiary Dashboard -->
+    <section id="beneficiarySec">
+      <h2>Beneficiary Dashboard</h2>
+      <p><b>Token balance:</b> <span id="balance">?</span></p>
+      <button id="refreshBtn" class="secondary">Refresh Products</button>
+      <ul id="products"></ul>
+      <form id="buyForm">
+        <input name="product_id" type="number" placeholder="Product ID to buy" required />
+        <button type="submit">Buy</button>
+      </form>
+      <p id="buyMsg"></p>
+    </section>
+  </main>
+
+<script>
+const API = "http://127.0.0.1:8000";
+let token = null;
+let role  = null;
+
+function showSection(id){
+  document.querySelectorAll("main section").forEach(s=>s.style.display="none");
+  if(id) document.querySelector(id).style.display="block";
+}
+
+function setAuth(t, r){
+  token = t; role = r;
+  document.querySelector('#who').textContent = t ? r : '';
+  document.querySelector('#navLogout').style.display = t ? '' : 'none';
+  document.querySelector('#navLogin').style.display = t ? 'none' : '';
+  document.querySelector('#navRegister').style.display = t ? 'none' : '';
+  if (t && r==="donor"){ showSection("#donorSec"); }
+  else if (t && r==="beneficiary"){ showSection("#beneficiarySec"); fetchMe(); refreshProducts(); }
+  else { showSection("#loginSec"); }
+}
+
+async function jsonFetch(url, opts={}){
+  opts.headers = Object.assign({"Content-Type":"application/json"}, opts.headers || {});
+  if (token) opts.headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(url, opts);
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error(data.detail || JSON.stringify(data));
+  return data;
+}
+
+// Navbar links
+document.querySelector('#navRegister').onclick = ()=> showSection("#registerSec");
+document.querySelector('#navLogin').onclick = ()=> showSection("#loginSec");
+document.querySelector('#navDonor').onclick = ()=> showSection("#donorSec");
+document.querySelector('#navBeneficiary').onclick = ()=> showSection("#beneficiarySec");
+document.querySelector('#navLogout').onclick = ()=> setAuth(null, null);
+
+// Register
+document.querySelector('#registerForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  try{
+    await jsonFetch(`${API}/auth/register`, {method:'POST', body: JSON.stringify(body)});
+    document.querySelector('#regMsg').textContent = "Registered. Please login.";
+    showSection("#loginSec");
+  }catch(err){ document.querySelector('#regMsg').textContent = err.message; }
+});
+
+// Login
+document.querySelector('#loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  try{
+    const out = await jsonFetch(`${API}/auth/login`, {method:'POST', body: JSON.stringify(body)});
+    token = out.access_token;
+    const me = await jsonFetch(`${API}/auth/me`);
+    setAuth(out.access_token, me.role);
+    document.querySelector('#loginMsg').textContent = "Logged in.";
+  }catch(err){ document.querySelector('#loginMsg').textContent = err.message; }
+});
+
+// Donor: add product
+document.querySelector('#addProductForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  body.cost = Number(body.cost);
+  try{
+    const p = await jsonFetch(`${API}/products`, {method:'POST', body: JSON.stringify(body)});
+    document.querySelector('#addMsg').textContent = `Added: ${p.name}`;
+  }catch(err){ document.querySelector('#addMsg').textContent = err.message; }
+});
+
+// Beneficiary: balance + products + buy
+async function fetchMe(){
+  try{
+    const me = await jsonFetch(`${API}/auth/me`);
+    document.querySelector('#balance').textContent = me.token_balance;
+  }catch{}
+}
+async function refreshProducts(){
+  const ul = document.querySelector('#products');
+  ul.innerHTML = '';
+  const items = await jsonFetch(`${API}/products`);
+  items.forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = `${p.id}. ${p.name} — ${p.cost} tokens (by ${p.owner_email})`;
+    ul.appendChild(li);
+  });
+}
+document.querySelector('#refreshBtn').onclick = refreshProducts;
+
+document.querySelector('#buyForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  body.product_id = Number(body.product_id);
+  try{
+    const out = await jsonFetch(`${API}/tokens/spend`, {method:'POST', body: JSON.stringify(body)});
+    document.querySelector('#buyMsg').textContent = out.msg;
+    await fetchMe();
+  }catch(err){ document.querySelector('#buyMsg').textContent = err.message; }
+});
+
+// Show login first by default
+showSection("#loginSec");
+</script>
+</body>
+</html>

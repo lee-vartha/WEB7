@@ -4,7 +4,7 @@ MEAN:
 1. cd MEAN-App
 2. cd backend
 3. node index.js
-# [make new terminal]
+[make new terminal]
 4. cd MEAN-App
 5. cd frontend
 6. ng serve -o
@@ -14,7 +14,7 @@ MERN:
 1. cd MERN-App
 2. cd backend
 3. npm run dev
-# [make new terminal]
+[make new terminal]
 4. cd MERN-App
 5. cd frontend
 6. npm start
@@ -24,7 +24,7 @@ MEVN:
 1. cd MEVN-App
 2. cd backend
 3. npm run dev
-# [make new terminal]
+[make new terminal]
 4. cd MEVN-App
 5. cd frontend
 6. npm run serve
@@ -32,3 +32,11 @@ MEVN:
 Gradio:
 1. cd Gradio-App
 2. python app.py
+
+Python:
+Source .venv/Scripts/activate
+1. cd Python-App
+2. cd backend
+3. "uvicorn app.main:app --reload"
+4. open frontend/index.html
+5. click 'go live' bottom right tab
