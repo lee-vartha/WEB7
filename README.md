@@ -1,6 +1,5 @@
 # WEB7
 # MEAN - MongoDB, Express.js, ANGULAR, Node.js
-MEAN:
 1. cd MEAN-App
 2. cd backend
 3. node index.js
@@ -10,7 +9,6 @@ MEAN:
 6. ng serve -o
 
 # MERN - MongoDB, Express.js, REACT, Node.js
-MERN:
 1. cd MERN-App
 2. cd backend
 3. npm run dev
@@ -20,7 +18,6 @@ MERN:
 6. npm start
 
 # MEVN - MongoDB, Express.js, VUE, Node.js
-MEVN:
 1. cd MEVN-App
 2. cd backend
 3. npm run dev
@@ -29,11 +26,11 @@ MEVN:
 5. cd frontend
 6. npm run serve
 
-Gradio:
+# Gradio (Python, FastAPI, SQLite, Gradio UI):
 1. cd Gradio-App
 2. python app.py
 
-Python:
+# Python (FastAPI, SQLite, HTML):
 Source .venv/Scripts/activate
 1. cd Python-App
 2. cd backend
