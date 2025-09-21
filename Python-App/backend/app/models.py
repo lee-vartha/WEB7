@@ -1,6 +1,8 @@
 from typing import Optional
 from sqlmodel import SQLModel, Field, Relationship
 
+# defines the user model class using SQLModel, which is used for interaction with SQL db in python applications (like FastAPI)
+# table=true tells SQLModel to create a corresponding database table for this class
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str

@@ -12,10 +12,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "app.db")
 
 # initiate database
+# define and calls the init_db function, which sets up the apps SQLite db if it doesnt already exist
 def init_db():
+    # connecting to the database specified by DB_PATH and creating a cursor to execute SQL commands
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
+    # creating a user table to store user information
     c.execute("""
     CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,6 +30,7 @@ def init_db():
               )
         """)
     
+    # creating a products table to storing product information 
     c.execute("""
     CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +40,7 @@ def init_db():
             )
               
         """)
-    
+    # once the tables are executed, the function commits the changes to the database and closes the connection
     conn.commit()
     conn.close()
 
@@ -44,14 +48,20 @@ init_db()
 
 
 # JWT 
+# generates a JWT for a user based on their email and role - builds a payload dictionary which contains the users email, role and expiry time
 def create_token(email, role):
     payload = {
         "email": email,
         "role": role,
         "exp": time.time() + TOKEN_EXPIRES_SECONDS
     }
+    # calling jwt.encode, passing in the payload and a secret key, additionally specifying the HS256 algorithm for signing.
+    # creates an encoded token which can be sent to the client and can be used to verify the users identity
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm="HS256")
 
+# responsible for verifying and decoding a JWT - takes a token as input and tries to decode it using the decode method, providing the secret key and specifying the algorithm
+# if the token is valid and isnt expired, the decoded payload is returned
+# if the tokens expired an error is raised, indicating the token isnt valid anymore
 def decode_token(token):
     try:
         decoded = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
@@ -61,8 +71,12 @@ def decode_token(token):
     except jwt.InvalidTokenError:
         return None
     
+
+# registering a user in through SQLite
+# function first hashes the plain text password using pbkdf2_sha256.hash, which applies a salted hash to protect the password from being stored in plain text
 def register(name, email, password, role):
     hashed_pw = pbkdf2_sha256.hash(password)
+    # connecting to the database, creates a cursor and executes the insert statement to add the new users details into the users table
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
@@ -74,6 +88,7 @@ def register(name, email, password, role):
     except sqlite3.IntegrityError:
         return "Email already used"
     
+# logging in a user with existing credentials
 def login(email, password):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -102,6 +117,7 @@ def list_products():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT id, name, cost, owner_email FROM products")
+    # retrieves all remaining rows from the result set of last executed query using c
     items = c.fetchall()
     conn.close()
     return "\n".join([f"{id}. {name} - {cost} tokens (by {owner})" for id, name, cost, owner in items])

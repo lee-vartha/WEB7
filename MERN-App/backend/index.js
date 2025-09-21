@@ -20,9 +20,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/tokens', tokenRoutes);
 
+// connecting to the db
 mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useNewUrlParser: true, // tells mongoose to use the new db connection parser instead of old one 
+    useUnifiedTopology: true, // enables the option to improve server discovery and monitoring
 })
     .then(() => {
         console.log('MongoDB connected');
